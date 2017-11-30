@@ -47,8 +47,8 @@ class Results:
     ORIGINAL_TO_SAFE = 2
     #KEEP_CHARACTERS = (' ', '.', '_', '-', '#', '+', '=')
     REPLACE_CHARACTERS = {
-        '/', '#',
-        ':', '='
+        '/': '#',
+        ':': '='
     }
     DEL_NON_ALPHANUM = False
 
@@ -60,27 +60,27 @@ class Results:
         self._sep = ";"
 
     @staticmethod
-    def _translate(keyword, translation=ORIGINAL_TO_SAFE):
-        if translation == ORIGINAL_TO_SAFE:
+    def _translate(keyword, translation=2):
+        if translation == Results.ORIGINAL_TO_SAFE:
             return Results._get_safe_keyword(keyword)
-        if translation == SAFE_TO_ORIGINAL:
+        if translation == Results.SAFE_TO_ORIGINAL:
             return Results._get_original_keyword(keyword)
 
     @staticmethod
     def _get_original_keyword(safe_keyword):
-        for key, val in REPLACE_CHARACTERS.items():
+        for key, val in Results.REPLACE_CHARACTERS.items():
             keyword = keyword.replace(value, key)
 
         return keyword
 
     @staticmethod
     def _get_safe_keyword(keyword):
-        for key, val in REPLACE_CHARACTERS.items():
+        for key, val in Results.REPLACE_CHARACTERS.items():
             keyword = keyword.replace(key, value)
 
-        if DEL_NON_ALPHANUM:
+        if Results.DEL_NON_ALPHANUM:
             return "".join(c for c in keyword
-                           if c.isalnum() or c in KEEP_CHARACTERS).rstrip()
+                           if c.isalnum() or c in Results.KEEP_CHARACTERS).rstrip()
         else:
             return keyword
 
