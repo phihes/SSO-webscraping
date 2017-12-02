@@ -2,6 +2,7 @@ import pandas as pd
 from os import path
 import datetime
 import glob
+import csv
 from multiprocessing.dummy import Pool as ThreadPool
 import abc
 import logging
@@ -69,14 +70,14 @@ class Results:
     @staticmethod
     def _get_original_keyword(safe_keyword):
         for key, val in Results.REPLACE_CHARACTERS.items():
-            keyword = keyword.replace(value, key)
+            keyword = keyword.replace(val, key)
 
         return keyword
 
     @staticmethod
     def _get_safe_keyword(keyword):
         for key, val in Results.REPLACE_CHARACTERS.items():
-            keyword = keyword.replace(key, value)
+            keyword = keyword.replace(key, val)
 
         if Results.DEL_NON_ALPHANUM:
             return "".join(c for c in keyword
