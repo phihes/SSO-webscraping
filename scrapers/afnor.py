@@ -1,7 +1,8 @@
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, NoSuchFrameException
-from .scraper import Scraper, Results
+from .scrapetools import Scraper, Results
+from urllib.error import URLError
 import logging
 logger = logging.getLogger(__name__)
 
@@ -152,22 +153,25 @@ class AfnorScraper(Scraper):
         results = Results(self.save_to)
 
         for word in keywords:
+            try:
+                logger.info("logging in")
+                self.login()
 
-            logger.info("logging in")
-            self.login()
+                logger.info("searching for " + word)
 
-            logger.info("searching for " + word)
-            if self.search(word):
+                if self.search(word):
 
-                # step 3: get search results
-                hits = BeautifulSoup(self.browser.execute_script(
-                    "return document.body.innerHTML"))
-                for res in self._extract_meta(word, hits, get_members=True):
-                    results.add(word, res)
-                results.to_csv(word)
+                    # step 3: get search results
+                    hits = BeautifulSoup(self.browser.execute_script(
+                        "return document.body.innerHTML"))
+                    for res in self._extract_meta(word, hits, get_members=True):
+                        results.add(word, res)
+                    results.to_csv(word)
 
-                # logout
-                self.logout()
+                    # logout
+                    self.logout()
+            except (ConnectionResetError, ConnectionRefusedError, URLError):
+                logger.warn("connection reset while searching for " + word)
 
         return results
 
@@ -231,7 +235,14 @@ class Person:
 
 def parse_people(table):
     people = []
-    for row in table.find('tbody').find_all('tr'):
-        people.append(Person(*[f.text for f in row.find_all('td')]))
+    try:
+        rows = table.find('tbody').find_all('tr')
+        for row in rows:
+            people.append(Person(*[f.text for f in row.find_all('td')]))
+    except AttributeError:
+        pass
+
+    if len(people) < 1:
+        logger.warn("encountered empty members table")
 
     return people
