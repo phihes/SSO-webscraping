@@ -172,6 +172,8 @@ class AfnorScraper(Scraper):
                     self.logout()
             except (ConnectionResetError, ConnectionRefusedError, URLError):
                 logger.warn("connection reset while searching for " + word)
+            except NoSuchElementException:
+                logger.warn("search for " + word + " failed!")
 
         return results
 

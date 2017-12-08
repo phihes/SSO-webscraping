@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException, NoSuchFrameException
+from selenium.common.exceptions import NoSuchElementException, NoSuchFrameException, TimeoutException
 import selenium.webdriver.support.ui as ui
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -29,26 +29,35 @@ class WosScraper(Scraper):
         pass
 
     def search(self, author):
-        self.browser.get(self.urls['author_search'] + author)
-        first = WebDriverWait(self.browser, 300).until(
-            EC.presence_of_element_located((By.ID, "UA_output_input_form")))
-        # content = self.browser.execute_script(
-        #             "return document.body.innerHTML")
-        # logger.info(content)
+        try:
+            self.browser.get(self.urls['author_search'] + author)
+            first = WebDriverWait(self.browser, 300).until(
+                EC.presence_of_element_located((By.ID, "UA_output_input_form")))
+            content = self.browser.execute_script(
+                         "return document.body.innerHTML")
 
-        self.browser.find_element_by_xpath(
-            "//*[@id='chunk_data']/tbody/tr[4]/td/div/table[2]/tbody/tr[2]/td[1]/input").click()
-        self.browser.find_element_by_xpath(
-            "//*[@id='chunk_data']/tbody/tr[4]/td/div/table[1]/tbody/tr[1]/td[2]/input[1]").click()
-        second = WebDriverWait(self.browser, 300).until(
-            EC.presence_of_element_located((By.ID, "RECORD_1")))
-        self.browser.find_elements_by_xpath(
-            "//div[@id='RECORD_1']//a")[0].click()
-        doc = WebDriverWait(self.browser, 300).until(
-            lambda b: b.find_element_by_class_name('FR_field'))
-        emails = doc.find_elements_by_xpath("//a[starts-with(@href, 'mailto:')]")
+            self.browser.find_element_by_xpath(
+                "//*[@id='chunk_data']/tbody/tr[4]/td/div/table[2]/tbody/tr[2]/td[1]/input").click()
+            self.browser.find_element_by_xpath(
+                "//*[@id='chunk_data']/tbody/tr[4]/td/div/table[1]/tbody/tr[1]/td[2]/input[1]").click()
+            second = WebDriverWait(self.browser, 300).until(
+                EC.presence_of_element_located((By.ID, "RECORD_1")))
+            content = self.browser.execute_script(
+                         "return document.body.innerHTML")        
+            self.browser.find_elements_by_xpath(
+                "//div[@id='RECORD_1']//a")[0].click()
+            doc = WebDriverWait(self.browser, 300).until(
+                lambda b: b.find_element_by_class_name('FR_field'))
+            emails = doc.find_elements_by_xpath("//a[starts-with(@href, 'mailto:')]")
+            return [e.get_attribute("href").split(":")[1] for e in list(emails)]
 
-        return [e.get_attribute("href").split(":")[1] for e in list(emails)]
+        except NoSuchElementException:
+            logger.warn('something went wrong while looking for ' + author)
+            return []
+        except TimeoutException:
+            logger.warn('timeout while looking for ' + author)
+            return []
+        
 
     def run(self, keywords):
 
