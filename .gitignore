@@ -1,2 +1,4 @@
 data/
 scrapers/__pycache__/
+secrets.py
+__pycache__/
