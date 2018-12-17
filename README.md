@@ -10,3 +10,4 @@ Available scrapers:
 * AFNOR: Collect meta-data on french standards from AFNOR's website (requires user+password)
 * WOS: Collect authors and e-mail addresses on publication topics from web of science
 * ISO: Collect ISO standards
+* DIN: Collect information on all DIN committees ("Normungsausschuesse"), their sub- and mirror-committees (at ISO, CEN, ...)
